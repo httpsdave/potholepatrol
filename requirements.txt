@@ -1,5 +1,5 @@
-gunicorn
 ﻿flask
+gunicorn
 numpy
 opencv-python
 ultralytics
