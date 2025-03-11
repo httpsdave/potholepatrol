@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Analyzer</title>
+    <style>
+        body {
+            background-color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+        .upload-box {
+            border: 2px dashed #000;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            width: 300px;
+        }
+        #fileInput {
+            display: none; /* Hide default file input */
+        }
+        img {
+            max-width: 300px;
+            margin-top: 10px;
+            display: none;
+        }
+        .result-container {
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="upload-box" onclick="document.getElementById('fileInput').click()">
+        Click to upload an image
+        <input type="file" id="fileInput" accept="image/*">
+    </div>
+    <img id="preview">
+    <button onclick="analyzeImage()">Analyze</button>
+
+    <div class="result-container">
+        <h3>Results:</h3>
+        <p id="result"></p>
+    </div>
+
+    <script>
+        document.getElementById('fileInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById('preview');
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function analyzeImage() {
+            const fileInput = document.getElementById('fileInput');
+            if (!fileInput.files.length) {
+                alert("Please upload an image first.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("file", fileInput.files[0]);
+
+            fetch("/analyze", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById("result");
+                if (data.predictions.length === 0) {
+                    resultDiv.innerHTML = "No objects detected.";
+                } else {
+                    let output = "<ul>";
+                    data.predictions.forEach(prediction => {
+                        output += `<li>${prediction.label} (Confidence: ${(prediction.confidence * 100).toFixed(2)}%)</li>`;
+                    });
+                    output += "</ul>";
+                    resultDiv.innerHTML = output;
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        }
+    </script>
+</body>
+</html>
