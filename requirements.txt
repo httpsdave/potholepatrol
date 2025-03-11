@@ -1,5 +1,5 @@
 gunicorn
-﻿Flask
+﻿flask
 numpy
 opencv-python
 ultralytics
