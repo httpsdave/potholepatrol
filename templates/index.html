@@ -3,73 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Analyzer</title>
+    <title>Pothole Detector</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Montserrat', sans-serif;
+        }
+
         body {
-            background-color: white;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            flex-direction: column;
+            background: #121212;
         }
-        .upload-box {
-            border: 2px dashed #000;
-            padding: 20px;
+
+        .container {
+            display: flex;
+            gap: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
             text-align: center;
+            width: 800px;
+        }
+
+        .left, .right {
+            flex: 1;
+        }
+
+        h1, h2 {
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 20px;
+        }
+
+        .upload-box {
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+            padding: 25px;
             cursor: pointer;
-            width: 300px;
+            border-radius: 10px;
+            color: rgba(255, 255, 255, 0.8);
+            text-transform: uppercase;
+            font-size: 14px;
         }
+
+        .upload-box:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
         #fileInput {
-            display: none; /* Hide default file input */
-        }
-        img {
-            max-width: 300px;
-            margin-top: 10px;
             display: none;
         }
-        .result-container {
-            margin-top: 10px;
-            text-align: center;
+
+        .preview-image {
+            width: 100%;
+            border-radius: 8px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: 0.3s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background: #0056b3;
+        }
+
+        .results-container {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
         }
     </style>
 </head>
 <body>
-    <div class="upload-box" onclick="document.getElementById('fileInput').click()">
-        Click to upload an image
-        <input type="file" id="fileInput" accept="image/*">
-    </div>
-    <img id="preview">
-    <button onclick="analyzeImage()">Analyze</button>
-
-    <div class="result-container">
-        <h3>Results:</h3>
-        <p id="result"></p>
+    <div class="container">
+        <div class="left">
+            <h1>Pothole Detector</h1>
+            <label for="fileInput" class="upload-box">Click to upload an image</label>
+            <input type="file" id="fileInput" accept="image/*" onchange="previewImage(event)">
+            <img id="previewImage" class="preview-image hidden" src="" alt="Uploaded Image">
+            <button class="btn" onclick="analyzeImage()">Analyze</button>
+        </div>
+        <div class="right">
+            <h2>Results</h2>
+            <div class="results-container">
+                <p id="resultsText">Processing...</p>
+                <img id="processedImage" class="preview-image hidden" src="" alt="Processed Image">
+            </div>
+        </div>
     </div>
 
     <script>
-        document.getElementById('fileInput').addEventListener('change', function(event) {
+        function previewImage(event) {
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    const img = document.getElementById('preview');
-                    img.src = e.target.result;
-                    img.style.display = 'block';
+                    document.getElementById("previewImage").src = e.target.result;
+                    document.getElementById("previewImage").classList.remove("hidden");
                 };
                 reader.readAsDataURL(file);
             }
-        });
+        }
 
         function analyzeImage() {
-            const fileInput = document.getElementById('fileInput');
-            if (!fileInput.files.length) {
-                alert("Please upload an image first.");
-                return;
-            }
+            const fileInput = document.getElementById("fileInput");
+            if (!fileInput.files.length) return alert("Please select an image first!");
 
             const formData = new FormData();
             formData.append("file", fileInput.files[0]);
+
+            document.getElementById("resultsText").innerText = "Analyzing...";
 
             fetch("/analyze", {
                 method: "POST",
@@ -77,19 +138,27 @@
             })
             .then(response => response.json())
             .then(data => {
-                const resultDiv = document.getElementById("result");
-                if (data.predictions.length === 0) {
-                    resultDiv.innerHTML = "No objects detected.";
-                } else {
-                    let output = "<ul>";
-                    data.predictions.forEach(prediction => {
-                        output += `<li>${prediction.label} (Confidence: ${(prediction.confidence * 100).toFixed(2)}%)</li>`;
-                    });
-                    output += "</ul>";
-                    resultDiv.innerHTML = output;
+                if (data.error) {
+                    document.getElementById("resultsText").innerText = data.error;
+                    return;
                 }
+
+                // Prevent browser caching
+                const timestamp = new Date().getTime();
+                document.getElementById("processedImage").src = data.image_url + "?t=" + timestamp;
+                document.getElementById("processedImage").classList.remove("hidden");
+
+                // Display results
+                let resultText = "";
+                data.predictions.forEach(prediction => {
+                    resultText += `• ${prediction.label} (Confidence: ${prediction.confidence}%)<br>`;
+                });
+                document.getElementById("resultsText").innerHTML = resultText || "No pothole detected.";
             })
-            .catch(error => console.error("Error:", error));
+            .catch(error => {
+                document.getElementById("resultsText").innerText = "Error processing image.";
+                console.error("Error:", error);
+            });
         }
     </script>
 </body>
