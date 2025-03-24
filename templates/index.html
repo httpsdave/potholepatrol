@@ -3,163 +3,796 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pothole Detector</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>Pothole Patrol</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #3B82F6;
+            --primary-dark: #2563EB;
+            --primary-light: #DBEAFE;
+            --dark: #111827;
+            --gray-dark: #1F2937;
+            --gray: #374151;
+            --gray-light: #6B7280;
+            --light: #F9FAFB;
+            --danger: #EF4444;
+            --success: #10B981;
+            --radius: 12px;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Montserrat', sans-serif;
+            font-family: 'Inter', sans-serif;
         }
 
         body {
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            background: #121212;
+            min-height: 100vh;
+            background: var(--dark);
+            color: var(--light);
+            padding: 20px;
         }
 
-        .container {
+        .app-container {
             display: flex;
-            gap: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
-            text-align: center;
-            width: 800px;
+            flex-direction: column;
+            width: 100%;
+            max-width: 1000px;
+            background: var(--gray-dark);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
         }
 
-        .left, .right {
+        .app-header {
+            padding: 24px 32px;
+            background: var(--gray);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .app-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            fill: var(--primary);
+        }
+
+        .app-title {
+            font-weight: 700;
+            font-size: 24px;
+            letter-spacing: -0.5px;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            padding: 32px;
+            gap: 32px;
+        }
+
+        @media (min-width: 768px) {
+            .main-content {
+                flex-direction: row;
+            }
+        }
+
+        .upload-section, .results-section {
             flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
-        h1, h2 {
+        .section-title {
+            font-size: 18px;
             font-weight: 600;
-            color: #ffffff;
-            margin-bottom: 20px;
+            color: var(--light);
+            margin-bottom: 8px;
         }
 
-        .upload-box {
-            border: 2px dashed rgba(255, 255, 255, 0.5);
-            padding: 25px;
+        .upload-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .dropzone {
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius);
+            padding: 40px 20px;
+            text-align: center;
             cursor: pointer;
-            border-radius: 10px;
-            color: rgba(255, 255, 255, 0.8);
-            text-transform: uppercase;
-            font-size: 14px;
+            transition: all 0.2s ease;
+            background: rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
         }
 
-        .upload-box:hover {
-            background: rgba(255, 255, 255, 0.2);
+        .dropzone:hover, .dropzone.drag-over {
+            border-color: var(--primary);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .dropzone-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .upload-icon {
+            width: 48px;
+            height: 48px;
+            fill: var(--primary-light);
+            transition: transform 0.2s ease;
+        }
+
+        .dropzone:hover .upload-icon {
+            transform: translateY(-5px);
+        }
+
+        .dropzone-text {
+            font-size: 14px;
+            color: var(--light);
+            font-weight: 500;
+        }
+
+        .dropzone-hint {
+            font-size: 12px;
+            color: var(--gray-light);
+            margin-top: 4px;
         }
 
         #fileInput {
             display: none;
         }
 
-        .preview-image {
+        .image-preview-container {
+            position: relative;
             width: 100%;
-            border-radius: 8px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-            margin-bottom: 10px;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            aspect-ratio: 16/9;
+            background: rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            display: none;
+        }
+
+        .preview-placeholder {
+            color: var(--gray-light);
+            font-size: 14px;
+        }
+
+        .preview-image.visible {
+            display: block;
+        }
+
+        .preview-placeholder.hidden {
+            display: none;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
         }
 
         .btn {
-            background: #007bff;
-            color: white;
+            flex: 1;
+            background: var(--gray);
+            color: var(--light);
             border: none;
             padding: 12px 18px;
-            border-radius: 6px;
+            border-radius: var(--radius);
             cursor: pointer;
-            font-size: 16px;
-            transition: 0.3s;
-            width: 100%;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
         }
 
-        .btn:hover {
-            background: #0056b3;
+        .btn-primary {
+            background: var(--primary);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-light);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-icon {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
         }
 
         .results-container {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 15px;
-            border-radius: 10px;
-            color: white;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius);
+            padding: 20px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .results-image-container {
+            position: relative;
+            width: 100%;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            aspect-ratio: 16/9;
+            background: rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .results-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            display: none;
+        }
+
+        .results-image.visible {
+            display: block;
+        }
+
+        .results-data {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius);
+            padding: 16px;
+        }
+
+        .results-placeholder {
+            color: var(--gray-light);
+            text-align: center;
+            font-size: 14px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            height: 100%;
+        }
+
+        .detection-result {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .detection-label {
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .detection-confidence {
+            font-size: 14px;
+            color: var(--primary-light);
+            font-weight: 600;
+        }
+
+        .severity-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--success);
+        }
+
+        .severity-high {
+            background: var(--danger);
+        }
+
+        .severity-medium {
+            background: #FBBF24;
+        }
+
+        .severity-low {
+            background: var(--success);
+        }
+
+        .loading-spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            background: var(--gray-dark);
+            color: var(--light);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.visible {
+            opacity: 1;
+        }
+
+        .toast-success {
+            border-left: 4px solid var(--success);
+        }
+
+        .toast-error {
+            border-left: 4px solid var(--danger);
+        }
+
+        .divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 8px 0;
+        }
+
+        .summary-section {
+            margin-top: 4px;
+        }
+
+        .summary-header {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--gray-light);
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            padding: 4px 0;
+        }
+
+        .summary-label {
+            color: var(--gray-light);
+        }
+
+        .summary-value {
+            font-weight: 500;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+        
+        .status-badge.analyzing {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary);
+        }
+
+        @media (max-width: 768px) {
+            .app-header {
+                padding: 16px;
+            }
+            
+            .main-content {
+                padding: 20px;
+                gap: 24px;
+            }
+            
+            .app-title {
+                font-size: 20px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="left">
-            <h1>Pothole Detector</h1>
-            <label for="fileInput" class="upload-box">Click to upload an image</label>
-            <input type="file" id="fileInput" accept="image/*" onchange="previewImage(event)">
-            <img id="previewImage" class="preview-image hidden" src="" alt="Uploaded Image">
-            <button class="btn" onclick="analyzeImage()">Analyze</button>
+    <div class="app-container">
+        <div class="app-header">
+            <div class="app-logo">
+                <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-1-8.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm3-3a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-6.5 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm.5 5a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm7 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
+                </svg>
+                <h1 class="app-title">Pothole Patrol</h1>
+            </div>
+            <div class="status-badge" id="statusBadge">Ready</div>
         </div>
-        <div class="right">
-            <h2>Results</h2>
-            <div class="results-container">
-                <p id="resultsText">Processing...</p>
-                <img id="processedImage" class="preview-image hidden" src="" alt="Processed Image">
+        
+        <div class="main-content">
+            <div class="upload-section">
+                <h2 class="section-title">Upload Image</h2>
+                <div class="upload-container">
+                    <label for="fileInput" class="dropzone" id="dropzone">
+                        <div class="dropzone-content">
+                            <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                <path d="M11 14.17V5H13V14.17L18.59 8.59L20 10L12 18L4 10L5.41 8.59L11 14.17Z" />
+                            </svg>
+                            <div class="dropzone-text">Click or drag image here</div>
+                            <div class="dropzone-hint">Supported formats: JPG, PNG, WEBP</div>
+                        </div>
+                    </label>
+                    <input type="file" id="fileInput" accept="image/*">
+                    
+                    <div class="image-preview-container">
+                        <img id="previewImage" class="preview-image" src="" alt="Preview">
+                        <div id="previewPlaceholder" class="preview-placeholder">Image preview will appear here</div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-secondary" id="resetBtn" disabled>
+                            <svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                <path d="M19.89 10.94C19.63 7.53 16.78 4.79 13.37 4.65C10.76 4.54 8.57 5.7 7.19 7.59C7.05 7.77 6.77 7.82 6.59 7.68C6.41 7.53 6.36 7.25 6.5 7.07C8.5 4.15 12.23 2.98 15.91 4.33C19.59 5.68 21.75 9.34 21.75 13.13V16C21.75 16.45 21.37 16.83 20.92 16.83C20.47 16.83 20.08 16.45 20.08 16V13.13C20.08 12.37 19.97 11.61 19.75 10.87L19.89 10.94Z" />
+                                <path d="M12 22.75C6.07 22.75 1.25 17.93 1.25 12C1.25 9.76 1.92 7.54 3.24 5.6C3.38 5.42 3.66 5.38 3.84 5.53C4.02 5.67 4.06 5.95 3.92 6.13C2.71 7.9 2.08 9.95 2.08 12C2.08 17.47 6.53 21.92 12 21.92C15.44 21.92 18.61 20.16 20.34 17.22C20.48 17.04 20.77 16.99 20.95 17.13C21.13 17.28 21.18 17.56 21.03 17.74C19.11 20.95 15.64 22.75 12 22.75Z" />
+                            </svg>
+                            Reset
+                        </button>
+                        <button class="btn btn-primary" id="analyzeBtn" disabled>
+                            <svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                <path d="M15.5 14C16.5 14 17.31 14.35 17.86 14.93L19.83 13.19C18.77 12.04 17.21 11.33 15.5 11.33C13.79 11.33 12.23 12.04 11.17 13.19L13.14 14.93C13.69 14.35 14.5 14 15.5 14ZM6 15.3L9 12.3L12 15.3H9.5V19H8.5V15.3H6ZM15.5 8.67C13.94 8.67 12.5 9.18 11.32 10.05L13.13 11.86C13.74 11.53 14.59 11.33 15.5 11.33C16.41 11.33 17.26 11.53 17.87 11.86L19.68 10.05C18.5 9.18 17.06 8.67 15.5 8.67ZM15.5 5.33C12.92 5.33 10.57 6.22 8.77 7.75L10.56 9.54C11.87 8.41 13.59 7.67 15.5 7.67C17.41 7.67 19.13 8.41 20.44 9.54L22.23 7.75C20.43 6.22 18.08 5.33 15.5 5.33Z" />
+                            </svg>
+                            Analyze
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="results-section">
+                <h2 class="section-title">Results</h2>
+                <div class="results-container">
+                    <div class="results-image-container">
+                        <img id="resultsImage" class="results-image" src="" alt="Results">
+                        <div id="resultsPlaceholder" class="results-placeholder">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#6B7280" stroke-width="2"/>
+                                <path d="M12 8V12L15 15" stroke="#6B7280" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            Run analysis to see results
+                        </div>
+                    </div>
+                    
+                    <div class="results-data" id="resultsData">
+                        <!-- Results will be populated here -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+    
+    <div class="toast" id="toast">
+        <!-- Toast notifications will be shown here -->
+    </div>
 
     <script>
-        function previewImage(event) {
-            const file = event.target.files[0];
+        // DOM Elements
+        const fileInput = document.getElementById('fileInput');
+        const dropzone = document.getElementById('dropzone');
+        const previewImage = document.getElementById('previewImage');
+        const previewPlaceholder = document.getElementById('previewPlaceholder');
+        const resetBtn = document.getElementById('resetBtn');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const resultsImage = document.getElementById('resultsImage');
+        const resultsPlaceholder = document.getElementById('resultsPlaceholder');
+        const resultsData = document.getElementById('resultsData');
+        const toast = document.getElementById('toast');
+        const statusBadge = document.getElementById('statusBadge');
+
+        // Variables to track state
+        let hasImage = false;
+        let isAnalyzing = false;
+
+        // Initialize
+        function init() {
+            // Add event listeners for drag and drop
+            dropzone.addEventListener('dragover', handleDragOver);
+            dropzone.addEventListener('dragleave', handleDragLeave);
+            dropzone.addEventListener('drop', handleDrop);
+            
+            // Add event listener for file input
+            fileInput.addEventListener('change', handleFileSelect);
+            
+            // Button event listeners
+            resetBtn.addEventListener('click', resetImage);
+            analyzeBtn.addEventListener('click', analyzeImage);
+        }
+
+        // Handle drag over
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.add('drag-over');
+        }
+
+        // Handle drag leave
+        function handleDragLeave(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.remove('drag-over');
+        }
+
+        // Handle drop
+        function handleDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.remove('drag-over');
+            
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                fileInput.files = e.dataTransfer.files;
+                handleFileSelect();
+            }
+        }
+
+        // Handle file select (from input or drop)
+        function handleFileSelect() {
+            const file = fileInput.files[0];
+            
             if (file) {
+                // Check if file is an image
+                if (!file.type.match('image.*')) {
+                    showToast('Please select an image file (JPEG, PNG, etc.)', 'error');
+                    return;
+                }
+                
                 const reader = new FileReader();
+                
                 reader.onload = function(e) {
-                    document.getElementById("previewImage").src = e.target.result;
-                    document.getElementById("previewImage").classList.remove("hidden");
+                    previewImage.src = e.target.result;
+                    previewImage.classList.add('visible');
+                    previewPlaceholder.classList.add('hidden');
+                    
+                    // Enable buttons
+                    resetBtn.disabled = false;
+                    analyzeBtn.disabled = false;
+                    
+                    hasImage = true;
                 };
+                
                 reader.readAsDataURL(file);
             }
         }
 
+        // Reset image
+        function resetImage() {
+            fileInput.value = '';
+            previewImage.src = '';
+            previewImage.classList.remove('visible');
+            previewPlaceholder.classList.remove('hidden');
+            
+            // Reset results
+            resultsImage.src = '';
+            resultsImage.classList.remove('visible');
+            resultsPlaceholder.classList.remove('hidden');
+            resultsData.innerHTML = '';
+            
+            // Disable buttons
+            resetBtn.disabled = true;
+            analyzeBtn.disabled = true;
+            
+            hasImage = false;
+            statusBadge.textContent = 'Ready';
+            statusBadge.classList.remove('analyzing');
+        }
+
+        // Analyze image
         function analyzeImage() {
-            const fileInput = document.getElementById("fileInput");
-            if (!fileInput.files.length) return alert("Please select an image first!");
-
+            if (!hasImage || isAnalyzing) return;
+            
+            isAnalyzing = true;
+            statusBadge.textContent = 'Analyzing...';
+            statusBadge.classList.add('analyzing');
+            analyzeBtn.disabled = true;
+            
+            // Show analyzing state in results area
+            resultsData.innerHTML = `
+                <div class="results-placeholder">
+                    <div class="loading-spinner"></div>
+                    <div>Analyzing image...</div>
+                </div>
+            `;
+            
             const formData = new FormData();
-            formData.append("file", fileInput.files[0]);
-
-            document.getElementById("resultsText").innerText = "Analyzing...";
-
-            fetch("/analyze", {
-                method: "POST",
+            formData.append('file', fileInput.files[0]);
+            
+            fetch('/analyze', {
+                method: 'POST',
                 body: formData
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.error) {
-                    document.getElementById("resultsText").innerText = data.error;
-                    return;
+                    throw new Error(data.error);
                 }
-
-                // Prevent browser caching
+                
+                // Update results image
                 const timestamp = new Date().getTime();
-                document.getElementById("processedImage").src = data.image_url + "?t=" + timestamp;
-                document.getElementById("processedImage").classList.remove("hidden");
-
-                // Display results
-                let resultText = "";
-                data.predictions.forEach(prediction => {
-                    resultText += `• ${prediction.label} (Confidence: ${prediction.confidence}%)<br>`;
-                });
-                document.getElementById("resultsText").innerHTML = resultText || "No pothole detected.";
+                resultsImage.src = `${data.image_url}&t=${timestamp}`;
+                resultsImage.onload = function() {
+                    resultsImage.classList.add('visible');
+                    resultsPlaceholder.classList.add('hidden');
+                };
+                
+                // Process and display results
+                displayResults(data.predictions);
+                
+                // Update status
+                isAnalyzing = false;
+                statusBadge.textContent = data.predictions.length > 0 ? 
+                    `${data.predictions.length} Potholes Detected` : 'No Potholes Detected';
+                statusBadge.classList.remove('analyzing');
+                analyzeBtn.disabled = false;
+                
+                showToast('Analysis complete!', 'success');
             })
             .catch(error => {
-                document.getElementById("resultsText").innerText = "Error processing image.";
-                console.error("Error:", error);
+                console.error('Error:', error);
+                resultsData.innerHTML = `
+                    <div class="results-placeholder">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#EF4444" stroke-width="2"/>
+                            <path d="M12 8V14" stroke="#EF4444" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M12 17V17.01" stroke="#EF4444" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <div>Error: ${error.message}</div>
+                    </div>
+                `;
+                
+                isAnalyzing = false;
+                statusBadge.textContent = 'Error';
+                statusBadge.classList.remove('analyzing');
+                analyzeBtn.disabled = false;
+                
+                showToast(`Analysis failed: ${error.message}`, 'error');
             });
         }
+
+        // Display results
+        function displayResults(predictions) {
+            if (!predictions || predictions.length === 0) {
+                resultsData.innerHTML = `
+                    <div class="results-placeholder">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#10B981" stroke-width="2"/>
+                            <path d="M8 12L11 15L16 9" stroke="#10B981" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <div>No potholes detected</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Sort predictions by confidence
+            predictions.sort((a, b) => b.confidence - a.confidence);
+            
+            let resultsHTML = '';
+            let highSeverityCount = 0;
+            let mediumSeverityCount = 0;
+            let lowSeverityCount = 0;
+            
+            // Generate detection results
+            predictions.forEach(prediction => {
+                const confidencePercent = Math.round(prediction.confidence * 100);
+                let severityClass = 'severity-low';
+                
+                if (confidencePercent > 85) {
+                    severityClass = 'severity-high';
+                    highSeverityCount++;
+                } else if (confidencePercent > 70) {
+                    severityClass = 'severity-medium';
+                    mediumSeverityCount++;
+                } else {
+                    lowSeverityCount++;
+                }
+                
+                resultsHTML += `
+                    <div class="detection-result">
+                        <div class="detection-label">
+                            <div class="severity-indicator ${severityClass}"></div>
+                            ${prediction.label}
+                        </div>
+                        <div class="detection-confidence">${confidencePercent}%</div>
+                    </div>
+                `;
+            });
+            
+            // Add summary section
+            resultsHTML += `
+                <div class="divider"></div>
+                <div class="summary-section">
+                    <div class="summary-header">Summary</div>
+                    <div class="summary-item">
+                        <div class="summary-label">Total detections</div>
+                        <div class="summary-value">${predictions.length}</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">High severity</div>
+                        <div class="summary-value">${highSeverityCount}</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">Medium severity</div>
+                        <div class="summary-value">${mediumSeverityCount}</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">Low severity</div>
+                        <div class="summary-value">${lowSeverityCount}</div>
+                    </div>
+                </div>
+            `;
+            
+            resultsData.innerHTML = resultsHTML;
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            toast.textContent = message;
+            toast.className = `toast toast-${type} visible`;
+            
+            setTimeout(() => {
+                toast.classList.remove('visible');
+            }, 3000);
+        }
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
